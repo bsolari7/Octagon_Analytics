@@ -4,3 +4,4 @@ numpy>=1.26
 scikit-learn>=1.4
 ultralytics>=8.3
 opencv-python-headless>=4.9
+lap>=0.5.12
