@@ -115,222 +115,239 @@ def decisions_conclusion():
 
     st.header("Decisions and Reflection")
     st.write(
-        "This table documents the major decisions made across the project, "
-        "including alternatives considered, the reasoning behind each choice, "
-        "whether we would make the same decision again, and how AI-assisted "
-        "suggestions were checked."
+        "The summary below gives the major project choices at a glance. "
+        "Open a decision card for the alternatives, reasoning, future revision, "
+        "and AI-checking details."
     )
 
-    decisions = pd.DataFrame([
+    decisions = [
         {
             "Decision": "Data sources",
-            "Alternatives considered": (
-                "Use only one public UFC dataset; use betting odds as a major "
-                "predictor; collect a new video dataset before modeling."
+            "Alternatives": (
+                "Use one public UFC dataset; rely on betting odds; collect a "
+                "new video dataset before modeling."
             ),
             "Choice": (
                 "Combined detailed UFC bout statistics with fighter biography "
-                "data. Betting odds were excluded from the main models."
+                "data. Excluded betting odds from the main models."
             ),
-            "Why we chose it": (
-                "Combining fight history with age, height, reach, and weight "
-                "gave us pre-fight context while keeping the main model focused "
-                "on fighter information rather than market expectations."
+            "Why": (
+                "Fight history plus age, height, reach, and weight adds pre-fight "
+                "context while keeping the model focused on fighter information "
+                "rather than market expectations."
             ),
-            "Would we make this choice again?": (
-                "Yes, but we would add more independently collected pre-fight "
-                "information, such as rankings, camp changes, or weigh-in data."
+            "Again?": (
+                "Yes. We would add independently collected pre-fight information "
+                "such as rankings, camp changes, or weigh-in data."
             ),
-            "AI suggestion and how we checked it": (
-                "AI suggested combining fighter biography and fight-history data. "
-                "We checked that the join used normalized fighter names and reviewed "
-                "missing values after the merge."
+            "AI check": (
+                "AI suggested combining fight-history and biography data. We checked "
+                "normalized name joins and reviewed missing values after merging."
             ),
         },
         {
-            "Decision": "Join key and data preparation",
-            "Alternatives considered": (
-                "Join using raw fighter names; manually match every name; "
-                "drop all rows with missing biography information."
+            "Decision": "Join key and preparation",
+            "Alternatives": (
+                "Join using raw names; manually match every name; drop all rows "
+                "missing biography information."
             ),
             "Choice": (
                 "Created normalized fighter-name keys by standardizing case, "
                 "punctuation, accents, and repeated spaces."
             ),
-            "Why we chose it": (
-                "Raw names were inconsistent across files. Normalized keys produced "
-                "a more reliable merge while retaining more usable fight records."
+            "Why": (
+                "Raw names were inconsistent across files. Normalized keys retained "
+                "more usable records and produced a more reliable merge."
             ),
-            "Would we make this choice again?": (
-                "Yes. With more time, we would manually audit ambiguous name matches "
+            "Again?": (
+                "Yes. With more time, we would manually audit ambiguous matches "
                 "and use permanent fighter IDs if available."
             ),
-            "AI suggestion and how we checked it": (
+            "AI check": (
                 "AI suggested name normalization. We inspected unmatched and missing "
-                "biography fields after joining to make sure the merge was reasonable."
+                "biography fields after the merge."
             ),
         },
         {
             "Decision": "Prediction targets",
-            "Alternatives considered": (
-                "Predict only fight winner; predict exact method; predict a continuous "
-                "fight-duration value."
+            "Alternatives": (
+                "Predict only winner; predict exact method; predict continuous "
+                "fight duration."
             ),
             "Choice": (
-                "Used five classification targets: winner, finish, KO/TKO, submission, "
-                "and whether a bout lasts at least 10 minutes."
+                "Used five classification targets: winner, finish, KO/TKO, "
+                "submission, and a 10-minute duration threshold."
             ),
-            "Why we chose it": (
-                "These targets share the theme of pre-fight UFC prediction, are easy "
-                "to interpret, and can be defined consistently from the recorded data."
+            "Why": (
+                "The targets share a pre-fight UFC-prediction theme, are "
+                "interpretable, and can be consistently defined from the data."
             ),
-            "Would we make this choice again?": (
-                "Mostly yes. We would consider adding a regression model for exact "
-                "fight duration after more careful evaluation of its error."
+            "Again?": (
+                "Mostly yes. We would consider a duration-regression model after "
+                "evaluating its error carefully."
             ),
-            "AI suggestion and how we checked it": (
-                "AI suggested several target definitions. We verified that each target "
-                "could be created from fields already in the data without using future information."
+            "AI check": (
+                "AI suggested target definitions. We verified that each target "
+                "could be created without using future information."
             ),
         },
         {
-            "Decision": "Preventing leakage",
-            "Alternatives considered": (
-                "Use same-fight statistics directly; use career averages including "
-                "the current fight; create lagged pre-fight averages."
+            "Decision": "Leakage prevention",
+            "Alternatives": (
+                "Use same-fight statistics; use career averages including the "
+                "current fight; use lagged pre-fight averages."
             ),
             "Choice": (
-                "Created historical record, recent-form, and performance features "
-                "using only bouts before the fight being predicted."
+                "Created record, recent-form, and performance features using only "
+                "bouts before the bout being predicted."
             ),
-            "Why we chose it": (
-                "Same-fight statistics are only known after a fight occurs, so using "
-                "them would make the model unrealistically strong."
+            "Why": (
+                "Same-fight statistics are only known after the outcome and would "
+                "make the model unrealistically strong."
             ),
-            "Would we make this choice again?": (
+            "Again?": (
                 "Yes. Leakage prevention is essential for a realistic prediction model."
             ),
-            "AI suggestion and how we checked it": (
-                "AI suggested shifting each fighter's statistics by one fight. We checked "
-                "the code and confirmed that historical averages are calculated after `shift()`."
+            "AI check": (
+                "AI suggested shifting statistics by one fight. We checked that "
+                "historical averages are calculated after `shift()`."
             ),
         },
         {
             "Decision": "Train/test split",
-            "Alternatives considered": (
-                "Random train/test split; cross-validation only; chronological split."
+            "Alternatives": (
+                "Random split; cross-validation only; chronological split."
             ),
             "Choice": (
-                "Used the earliest 80% of event dates for training and the newest "
-                "20% of dates for held-out testing."
+                "Used the earliest 80% of event dates for training and newest "
+                "20% for held-out testing."
             ),
-            "Why we chose it": (
-                "A chronological split better matches the real task: using past fights "
-                "to predict later fights."
+            "Why": (
+                "This better matches the real task of using past fights to predict "
+                "later fights."
             ),
-            "Would we make this choice again?": (
-                "Yes. With more time, we would also use rolling time-based cross-validation."
+            "Again?": (
+                "Yes. With more time, we would add rolling time-based cross-validation."
             ),
-            "AI suggestion and how we checked it": (
-                "AI suggested a time-based split to avoid future information entering "
-                "training. We checked that all test dates occur on or after the cutoff date."
+            "AI check": (
+                "AI suggested a time-based split. We confirmed that every test date "
+                "occurs on or after the cutoff."
             ),
         },
         {
             "Decision": "Models and baseline",
-            "Alternatives considered": (
-                "Use only one model; use a complex deep-learning model; compare a "
+            "Alternatives": (
+                "Use one model; use a complex deep-learning model; compare a "
                 "baseline, Logistic Regression, and Gradient Boosting."
             ),
             "Choice": (
                 "Compared a constant-probability baseline with Logistic Regression "
-                "and Gradient Boosting for every predictive question."
+                "and Gradient Boosting for every question."
             ),
-            "Why we chose it": (
-                "The baseline shows whether the models learn beyond the historical rate. "
-                "Logistic Regression is interpretable, while Gradient Boosting can model "
-                "some nonlinear patterns and interactions."
+            "Why": (
+                "The baseline shows whether a model learns beyond the historical rate. "
+                "Logistic Regression is interpretable, while Gradient Boosting can "
+                "capture nonlinear patterns."
             ),
-            "Would we make this choice again?": (
-                "Yes. We would tune hyperparameters using time-aware validation before "
-                "trying more advanced models."
+            "Again?": (
+                "Yes. We would tune hyperparameters with time-aware validation "
+                "before trying more advanced models."
             ),
-            "AI suggestion and how we checked it": (
-                "AI suggested both model types and evaluation metrics. We retained them "
-                "because the team can explain their purpose and compared them on the same test period."
+            "AI check": (
+                "AI suggested the model types and metrics. We retained them because "
+                "the team can explain their purpose and compared them on the same test period."
             ),
         },
         {
             "Decision": "YOLO pose analysis",
-            "Alternatives considered": (
-                "Add pose metrics directly to the winner model; exclude video entirely; "
-                "treat YOLO as a separate exploratory feasibility study."
+            "Alternatives": (
+                "Add pose metrics directly to winner model; exclude video; treat "
+                "pose analysis as exploratory."
             ),
             "Choice": (
                 "Kept YOLO pose analysis separate from the outcome-prediction models."
             ),
-            "Why we chose it": (
-                "The project does not yet have a large, consistently labeled set of "
-                "fight videos with pose features available before each historical fight."
+            "Why": (
+                "We do not yet have a large, consistently labeled collection of "
+                "fight videos with pre-fight pose features."
             ),
-            "Would we make this choice again?": (
-                "Yes. The next step would be to build a labeled video dataset and test "
-                "whether video features improve held-out predictions."
+            "Again?": (
+                "Yes. The next step is to build a labeled video dataset and test "
+                "whether pose features improve held-out prediction."
             ),
-            "AI suggestion and how we checked it": (
-                "AI suggested a pose-analysis tab. We clearly label its measurements as "
-                "exploratory 2D estimates rather than validated predictive features."
+            "AI check": (
+                "AI suggested a pose-analysis tab. We label its measures as "
+                "exploratory 2D estimates, not validated model features."
             ),
         },
-    ])
+    ]
 
-    st.dataframe(decisions, hide_index=True, use_container_width=True)
+    summary = pd.DataFrame(decisions)[
+        ["Decision", "Choice", "Again?"]
+    ].rename(
+        columns={"Again?": "Would we make this choice again?"}
+    )
+
+    st.subheader("Table 2. Decision Summary")
+    st.dataframe(summary, hide_index=True, use_container_width=True)
+
+    st.subheader("Decision Details")
+
+    for item in decisions:
+        with st.expander(item["Decision"]):
+            st.markdown(f"**Choice**  \n{item['Choice']}")
+            st.markdown(
+                f"**Alternatives considered**  \n{item['Alternatives']}"
+            )
+            st.markdown(f"**Why we chose it**  \n{item['Why']}")
+            st.markdown(
+                f"**Would we make this choice again?**  \n{item['Again?']}"
+            )
+            st.markdown(
+                f"**AI suggestion and how we checked it**  \n{item['AI check']}"
+            )
 
     st.header("Discussion and Conclusions")
 
-    st.subheader("What the five questions say together")
+    st.subheader("What the Five Questions Say Together")
     st.write(
-        "All five questions examine the same central theme: how much can publicly "
-        "available pre-fight UFC information tell us about what will happen in a future "
-        "bout? Across winner, finish, KO/TKO, submission, and duration predictions, "
-        "historical record, recent form, physical characteristics, and prior performance "
-        "statistics contain some useful predictive signal. However, model performance is "
-        "not strong enough to treat an individual prediction as certain."
+        "All five questions examine one common theme: how much publicly available "
+        "pre-fight UFC information can tell us about a future bout. Historical "
+        "record, recent form, physical characteristics, and prior performance "
+        "contain useful signal, but the results are not strong enough to treat "
+        "an individual probability as certain."
     )
 
-    st.subheader("What we would tell a potential user")
+    st.subheader("What We Would Tell a Potential User")
     st.write(
-        "This website is best used as an exploratory matchup tool. It can summarize "
-        "historical differences between fighters and estimate probabilities based on "
-        "patterns in past UFC data. It should not be used as betting advice or as a "
-        "guaranteed forecast because important factors are missing, including injuries, "
-        "training camp quality, weight cuts, game plans, late opponent changes, judging, "
-        "and changes in fighter skill over time."
+        "This website is best used as an exploratory matchup tool. It summarizes "
+        "historical differences between fighters and estimates probabilities from "
+        "past UFC patterns. It is not betting advice or a guarantee because important "
+        "factors are missing, including injuries, training camp, weight cuts, game "
+        "plans, late opponent changes, judging, and changing skill over time."
     )
 
-    st.subheader("What we learned about predictive data science")
+    st.subheader("What We Learned About Predictive Data Science")
     st.write(
-        "The most important lesson was that a model can appear useful while still being "
-        "unrealistic if information leaks from the future into training. Building lagged "
-        "pre-fight features and using a chronological holdout made the evaluation more "
-        "credible. We also learned that a baseline is necessary: accuracy alone does not "
-        "show whether a model is useful, especially for rarer outcomes such as submissions. "
-        "Finally, adding more technology, such as YOLO pose estimation, does not automatically "
-        "improve a prediction model. New features must be collected consistently and tested on "
-        "data the model has never seen."
+        "The key lesson was that a model can look useful while still being unrealistic "
+        "if future information leaks into training. Lagged pre-fight features and a "
+        "chronological holdout made the evaluation more credible. We also learned that "
+        "a baseline is necessary and that accuracy alone can be misleading for rare "
+        "outcomes such as submissions. New technology, including YOLO pose estimation, "
+        "only helps if its features are consistently collected and evaluated on data "
+        "the model has never seen."
     )
 
     st.subheader("Next Steps")
     st.markdown(
         """
-        - Add verified pre-fight rankings, betting odds, weigh-in information, and injury context.
-        - Use rolling time-based cross-validation instead of one chronological split.
+        - Add verified pre-fight rankings, weigh-in information, and injury context.
+        - Use rolling time-based cross-validation.
         - Audit fighter-name matches and seek stable fighter IDs.
         - Build a consistently labeled fight-video dataset before using pose features in prediction.
-        - Add a held-out ground-truth page that compares pre-cutoff predictions with actual fight outcomes.
+        - Add a held-out ground-truth page comparing pre-cutoff predictions with actual outcomes.
         """
     )
-
 
 if page=="Overview":overview()
 elif page=="Data and EDA":data_eda()
