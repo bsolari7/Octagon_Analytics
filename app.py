@@ -8,10 +8,10 @@ from video_analysis import analyze_fight_video
 
 # Replace these four entries before submitting.
 TEAM_MEMBERS = [
-    {"name":"Team member 1","email":"email@calpoly.edu","focus":"Data preparation and provenance","sections":"Data; Decisions and reflection"},
-    {"name":"Team member 2","email":"email@calpoly.edu","focus":"Exploratory data analysis","sections":"Data and EDA"},
-    {"name":"Team member 3","email":"email@calpoly.edu","focus":"Predictive modeling and evaluation","sections":"Predictive questions; Results"},
-    {"name":"Team member 4","email":"email@calpoly.edu","focus":"YOLO feasibility study and website","sections":"Footage analysis; Limitations"},
+    {"name":"Cis Garcia","email":"cgarc283@calpoly.edu","focus":"YOLO feasibility study and website","sections":"Footage analysis, Limitations"},
+    {"name":"Brandon Solari","email":"bsolari@calpoly.edu","focus":"Data Visualization","sections":"EDA, Matchup predictor"},
+    {"name":"Noah Nayve","email":"nnayve@calpoly.edu","focus":"Data preparation and provenance","sections":"Data, Decisions"},
+    {"name":"David Morfin","email":"dmorfi04@calpoly.edu","focus":"Classification","sections":"Predictive questions, Conclusions"},
 ]
 PROJECT_TITLE = "Octagon Analytics: What Can Historical UFC Data Predict?"
 st.set_page_config(page_title="Octagon Analytics", page_icon="🥊", layout="wide")
@@ -28,7 +28,6 @@ def overview():
     st.markdown(f"<div class='hero'><h1>{PROJECT_TITLE}</h1><p>An interactive DATA 3301 report using historical UFC results, fighter biographies, and an exploratory pose-analysis workflow.</p></div>",unsafe_allow_html=True)
     st.header("Project team and focus areas")
     st.dataframe(pd.DataFrame(TEAM_MEMBERS).rename(columns={"name":"Team member","email":"Email","focus":"Focus area","sections":"Report section(s)"}),hide_index=True,use_container_width=True)
-    st.warning("Before submitting, replace the four placeholder names, emails, focus areas, and section references in `app.py`.")
     st.header("Introduction")
     st.markdown("""UFC outcomes are difficult to predict because opponents differ in style, experience, size, recent form, and context that is not directly observed in public records. This project asks what can be predicted from information that would have been available **before** a bout. We combine historical UFC bout statistics with fighter biography fields to create lagged, pre-fight features and evaluate models chronologically.
 
