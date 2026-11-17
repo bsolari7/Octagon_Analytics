@@ -288,9 +288,6 @@ def decisions_conclusion():
         columns={"Again?": "Would we make this choice again?"}
     )
 
-    st.subheader("Table 2. Decision Summary")
-    st.dataframe(summary, hide_index=True, use_container_width=True)
-
     st.subheader("Decision Details")
 
     for item in decisions:
