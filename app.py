@@ -46,7 +46,9 @@ def data_eda():
     st.subheader("Provenance and structure")
     sources=pd.DataFrame([["merged_stats_n_scorecards.csv","One completed UFC bout, with red/blue results and in-fight statistics","Historical bout outcomes and detailed statistics","All five outcome targets and lagged career features"],["fighters_raw.csv","One fighter profile","Height, reach, listed weight, stance, DOB","Joined by normalized fighter name"],["events_raw.csv, odds_raw.csv, SCORECARDS.csv","Event, market, and scorecard records","Supplementary project sources","Retained for exploration; odds excluded from primary prediction"]],columns=["File","Observational unit","Contents","Role in report"])
     st.dataframe(sources,hide_index=True,use_container_width=True)
-    st.caption("Source repositories: https://github.com/jansen88/ufc-data/tree/master/data, https://github.com/komaksym/UFC-DataLab/tree/main/data.")
+    st.caption("Source repositories: 
+    1. https://github.com/jansen88/ufc-data/tree/master/data
+    2. https://github.com/komaksym/UFC-DataLab/tree/main/data")
     with st.expander("Data integration and preparation"):
         st.markdown("""1. Retained records with valid event dates and W/L outcomes; draws, no contests, and incomplete outcomes were excluded.  
 2. Converted each bout into red- and blue-fighter perspectives. Strings such as `12 of 30` became landed and attempted values; control time became seconds.  
