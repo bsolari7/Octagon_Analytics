@@ -8,10 +8,10 @@ from video_analysis import analyze_fight_video
 
 # Replace these four entries before submitting.
 TEAM_MEMBERS = [
-    {"name":"Team member 1","email":"email@calpoly.edu","focus":"Data preparation and provenance","sections":"Data; Decisions and reflection"},
-    {"name":"Team member 2","email":"email@calpoly.edu","focus":"Exploratory data analysis","sections":"Data and EDA"},
-    {"name":"Team member 3","email":"email@calpoly.edu","focus":"Predictive modeling and evaluation","sections":"Predictive questions; Results"},
-    {"name":"Team member 4","email":"email@calpoly.edu","focus":"YOLO feasibility study and website","sections":"Footage analysis; Limitations"},
+    {"name":"Cis Garcia","email":"cgarc283@calpoly.edu","focus":"YOLO Video Analysis","sections":"Footage Analysis"},
+    {"name":"Brandon Solari","email":"bsolari@calpoly.edu","focus":"Data Visualization","sections":"Data and EDA, matchup predictor"},
+    {"name":"Noah Nayve","email":"nnayve@calpoly.edu","focus":"Joins and Unions","sections":"Provenance and structure, data integration and preparation"},
+    {"name":"David Morfin","email":"dmorfi04@calpoly.edu","focus":"Classification","sections":"Predictive questions"},
 ]
 PROJECT_TITLE = "Octagon Analytics: What Can Historical UFC Data Predict?"
 st.set_page_config(page_title="Octagon Analytics", page_icon="🥊", layout="wide")
