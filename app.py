@@ -3,15 +3,15 @@ from __future__ import annotations
 import os
 import pandas as pd
 import streamlit as st
-from modeling import QUESTIONS, load_artifacts, predict_winner
+from modeling import QUESTIONS, load_artifacts, predict_matchup
 from video_analysis import analyze_fight_video
 
 # Replace these four entries before submitting.
 TEAM_MEMBERS = [
-    {"name":"Cis Garcia","email":"cgarc283@calpoly.edu","focus":"YOLO Video Analysis","sections":"Footage Analysis"},
-    {"name":"Brandon Solari","email":"bsolari@calpoly.edu","focus":"Data Visualization","sections":"Data and EDA, matchup predictor"},
-    {"name":"Noah Nayve","email":"nnayve@calpoly.edu","focus":"Joins and Unions","sections":"Provenance and structure, data integration and preparation"},
-    {"name":"David Morfin","email":"dmorfi04@calpoly.edu","focus":"Classification","sections":"Predictive questions"},
+    {"name":"Team member 1","email":"email@calpoly.edu","focus":"Data preparation and provenance","sections":"Data; Decisions and reflection"},
+    {"name":"Team member 2","email":"email@calpoly.edu","focus":"Exploratory data analysis","sections":"Data and EDA"},
+    {"name":"Team member 3","email":"email@calpoly.edu","focus":"Predictive modeling and evaluation","sections":"Predictive questions; Results"},
+    {"name":"Team member 4","email":"email@calpoly.edu","focus":"YOLO feasibility study and website","sections":"Footage analysis; Limitations"},
 ]
 PROJECT_TITLE = "Octagon Analytics: What Can Historical UFC Data Predict?"
 st.set_page_config(page_title="Octagon Analytics", page_icon="🥊", layout="wide")
@@ -28,6 +28,7 @@ def overview():
     st.markdown(f"<div class='hero'><h1>{PROJECT_TITLE}</h1><p>An interactive DATA 3301 report using historical UFC results, fighter biographies, and an exploratory pose-analysis workflow.</p></div>",unsafe_allow_html=True)
     st.header("Project team and focus areas")
     st.dataframe(pd.DataFrame(TEAM_MEMBERS).rename(columns={"name":"Team member","email":"Email","focus":"Focus area","sections":"Report section(s)"}),hide_index=True,use_container_width=True)
+    st.warning("Before submitting, replace the four placeholder names, emails, focus areas, and section references in `app.py`.")
     st.header("Introduction")
     st.markdown("""UFC outcomes are difficult to predict because opponents differ in style, experience, size, recent form, and context that is not directly observed in public records. This project asks what can be predicted from information that would have been available **before** a bout. We combine historical UFC bout statistics with fighter biography fields to create lagged, pre-fight features and evaluate models chronologically.
 
@@ -77,15 +78,19 @@ def predictive_questions():
     st.subheader("Approaches tried and retained");st.markdown("The baseline tests whether models beat a constant historical rate. Logistic Regression is the interpretable linear benchmark. Gradient Boosting captures modest nonlinear effects and interactions. Betting odds were considered but excluded from the primary models because the project aims to evaluate athlete-history information rather than reproduce market expectations.")
 
 def matchup_predictor():
-    st.title("Interactive matchup predictor");st.caption("This is the live interface for Question 1 only. It uses data from before the selected date.")
+    st.title("Interactive matchup predictor");st.caption("All five questions use the selected fighters and only data from before the selected date.")
     names=data["names"].name.tolist();ia=names.index("Islam Makhachev") if "Islam Makhachev" in names else 0;ib=names.index("Charles Oliveira") if "Charles Oliveira" in names else 1
     with st.form("matchup"):
         left,right,date=st.columns([1,1,.75]);a=left.selectbox("Fighter A",names,index=ia);b=right.selectbox("Fighter B",names,index=ib);event_date=date.date_input("Hypothetical fight date",value=pd.Timestamp.today().date());st.form_submit_button("Predict matchup",type="primary",use_container_width=True)
     if a==b:st.warning("Choose two different fighters.");return
-    prediction=predict_winner(a,b,event_date);st.subheader(f"{a} vs. {b}");lr,tree=st.tabs(["Logistic regression","Gradient boosting"])
-    for tab,name in zip([lr,tree],["Logistic regression","Gradient boosting"]):
+    prediction=predict_matchup(a,b,event_date);st.subheader(f"{a} vs. {b}")
+    model_choice=st.radio("Prediction model",["Logistic regression","Gradient boosting"],horizontal=True,help="The report compares both approaches on a chronological held-out test set. Choose either approach to see all five live probabilities.")
+    winner,finish,ko,submission,long=st.tabs(["1. Winner","2. Finish","3. KO/TKO","4. Submission","5. Duration"])
+    with winner:
+        p=prediction["winner"][model_choice];x,y,z=st.columns([1,.4,1]);x.metric(a,pct(p),"estimated win probability");y.markdown("### vs.");z.metric(b,pct(1-p),"estimated win probability");st.progress(int(p*100),text=f"{a}: {p:.1%}   |   {b}: {1-p:.1%}");st.caption("Positive outcome: Fighter A wins the bout.")
+    for tab,key,positive,negative in [(finish,"finish","Bout ends before a decision","Bout goes to a decision"),(ko,"ko","Bout ends by KO/TKO","Bout does not end by KO/TKO"),(submission,"submission","Bout ends by submission","Bout does not end by submission"),(long,"long","Bout lasts at least 10 minutes","Bout lasts under 10 minutes")]:
         with tab:
-            p=prediction["probabilities"][name];x,y,z=st.columns([1,.4,1]);x.metric(a,pct(p),"estimated win probability");y.markdown("### vs.");z.metric(b,pct(1-p),"estimated win probability");st.progress(int(p*100),text=f"{a}: {p:.1%}   |   {b}: {1-p:.1%}")
+            p=prediction["bout"][key][model_choice];left,right=st.columns(2);left.metric(positive,pct(p));right.metric(negative,pct(1-p));st.progress(int(p*100),text=f"{positive}: {p:.1%}   |   {negative}: {1-p:.1%}");st.caption(f"Question {QUESTIONS[key]['title'].split('.')[0]}. These are bout-level probabilities, not fighter-specific outcome probabilities.")
     labels={"pre_bouts":"UFC bouts","pre_win_pct":"Smoothed win rate","last_3_win_pct":"Last 3 fight win rate","age":"Age","height_inches":"Height (in.)","reach_inches":"Reach (in.)","weight_lbs":"Listed weight (lb.)","pre_sig_str_landed_avg":"Avg. significant strikes landed","pre_td_landed_avg":"Avg. takedowns landed","pre_sub_att_avg":"Avg. submission attempts","pre_ctrl_seconds_avg":"Avg. control time (sec.)"}
     profile=pd.DataFrame({"Feature":labels.values(),a:[prediction["a"].get(x) for x in labels],b:[prediction["b"].get(x) for x in labels]})
     for col in [a,b]:profile[col]=profile[col].map(lambda x:"Not available" if pd.isna(x) else f"{x:.2f}")

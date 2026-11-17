@@ -163,10 +163,10 @@ def load_artifacts():
             fitted[name] = model
         for name, probability in [("Baseline", baseline)] + [(name, model.predict_proba(test[detail["features"]])[:, 1]) for name, model in fitted.items()]:
             scores.append({"Question": detail["title"], "Approach": name, **score(test.target, probability), "Test rows": len(test), "Positive rate": test.target.mean()})
-        # Refit only the winner models for live user selections; report models retain their held-out scores.
-        if key == "win":
-            for model in fitted.values(): model.fit(table[detail["features"]], table.target)
-            artifacts["winner_models"] = fitted
+        # Refit after scoring so the interactive site uses every available historical bout.
+        # Held-out results above remain the report's evaluation results.
+        for model in fitted.values(): model.fit(table[detail["features"]], table.target)
+        artifacts.setdefault("live_models", {})[key] = fitted
     names = pd.concat([bios[["fighter_key", "name"]], history[["fighter_key", "fighter"]].rename(columns={"fighter": "name"})]).dropna().drop_duplicates("fighter_key").sort_values("name")
     missing = pd.DataFrame({"Field": raw.columns, "Missing %": raw.isna().mean().mul(100).round(1)}).sort_values("Missing %", ascending=False)
     diagnostics = {
@@ -174,7 +174,7 @@ def load_artifacts():
         "Unique fighters": history.fighter_key.nunique(), "Date range": f"{history.event_date.min():%b %Y} - {history.event_date.max():%b %Y}",
         "Rows excluded before modeling": len(raw) - len(valid), "Chronological cutoff": cutoff,
     }
-    return {"raw": raw, "valid": valid, "history": history, "bios": bios, "fighter": fighter, "fight": fight, "scores": pd.DataFrame(scores), "winner_models": artifacts["winner_models"], "names": names, "missing": missing, "diagnostics": diagnostics, "cutoff": cutoff}
+    return {"raw": raw, "valid": valid, "history": history, "bios": bios, "fighter": fighter, "fight": fight, "scores": pd.DataFrame(scores), "live_models": artifacts["live_models"], "names": names, "missing": missing, "diagnostics": diagnostics, "cutoff": cutoff}
 
 
 def profile_at(artifacts, fighter_key, when):
@@ -192,14 +192,33 @@ def profile_at(artifacts, fighter_key, when):
     return profile
 
 
-def predict_winner(fighter_a, fighter_b, event_date):
+def predict_matchup(fighter_a, fighter_b, event_date):
+    """Return all five live probabilities for the selected fighters and date."""
     artifacts = load_artifacts(); names = artifacts["names"]; when = pd.Timestamp(event_date)
     key_a = names.loc[names.name.eq(fighter_a), "fighter_key"].iloc[0]; key_b = names.loc[names.name.eq(fighter_b), "fighter_key"].iloc[0]
     a, b = profile_at(artifacts, key_a, when), profile_at(artifacts, key_b, when)
     forward = pd.DataFrame([{f"{x}_difference": a[x] - b[x] for x in BASE_FEATURES}])
     reverse = -forward
-    probabilities = {}
-    for name, model in artifacts["winner_models"].items():
+    winner_probabilities = {}
+    for name, model in artifacts["live_models"]["win"].items():
         pa = model.predict_proba(forward[WIN_FEATURES])[:, 1][0]; pb = model.predict_proba(reverse[WIN_FEATURES])[:, 1][0]
-        probabilities[name] = float(pa / (pa + pb))
-    return {"a": a, "b": b, "probabilities": probabilities}
+        winner_probabilities[name] = float(pa / (pa + pb))
+    bout_row = {}
+    for feature in BASE_FEATURES:
+        bout_row[f"red_{feature}"] = a[feature]
+        bout_row[f"blue_{feature}"] = b[feature]
+        bout_row[f"{feature}_difference"] = a[feature] - b[feature]
+    bout_features = pd.DataFrame([bout_row])
+    bout_probabilities = {}
+    for key in ["finish", "ko", "submission", "long"]:
+        bout_probabilities[key] = {
+            name: float(model.predict_proba(bout_features[QUESTIONS[key]["features"]])[:, 1][0])
+            for name, model in artifacts["live_models"][key].items()
+        }
+    return {"a": a, "b": b, "winner": winner_probabilities, "bout": bout_probabilities}
+
+
+def predict_winner(fighter_a, fighter_b, event_date):
+    """Backwards-compatible access to only the primary winner question."""
+    output = predict_matchup(fighter_a, fighter_b, event_date)
+    return {"a": output["a"], "b": output["b"], "probabilities": output["winner"]}
