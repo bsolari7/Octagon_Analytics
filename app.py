@@ -331,16 +331,6 @@ def decisions_conclusion():
         """
     )
 
-    st.subheader("Submission Checklist")
-    st.markdown(
-        """
-        - [ ] Replace the four team-member placeholders in `app.py`.
-        - [ ] Add exact raw-data source URLs and citations.
-        - [ ] Add the deployed Streamlit URL to the first line of `README.md`.
-        - [ ] Confirm every team member can explain the feature engineering, split, models, metrics, and limitations.
-        - [ ] Submit the website ZIP, source code, notebooks, README, and necessary data.
-        """
-    )
 
 if page=="Overview":overview()
 elif page=="Data and EDA":data_eda()
